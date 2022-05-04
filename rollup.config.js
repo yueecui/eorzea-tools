@@ -1,6 +1,7 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
+import json from '@rollup/plugin-json';
 import { terser } from 'rollup-plugin-terser';
 import pkg from './package.json';
 
@@ -13,6 +14,7 @@ export default {
     },
     plugins: [ // 打包插件
         resolve(), // 查找和打包node_modules中的第三方模块
+        json(),
         commonjs(), // 将 CommonJS 转换成 ES2015 模块供 Rollup 处理
         typescript(), // 解析TypeScript
         // terser()

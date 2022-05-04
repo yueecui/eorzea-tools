@@ -1,19 +1,17 @@
 import { EorzeaTime } from "./eorzeaTime";
+import { EorzeaWeather } from "./eorzeaWeather";
 
-window.EorzeaTime = EorzeaTime;
+if (typeof (window) != 'undefined') {
+    window.EorzeaTime = EorzeaTime;
+    window.EorzeaWeather = EorzeaWeather;
+}
 
-const test1 = new EorzeaTime();
-console.log('test1');
-test1.show();
+const zone = new EorzeaWeather('拉诺西亚外地');
 
-const test2 = new EorzeaTime(1, 2, 3, 4);
-console.log('test2');
-test2.show();
+console.log('-3~10', zone.getWeathers([3, 10]));
 
-const test3 = EorzeaTime.fromLocalTimestamp(Date.now());
-console.log('test3');
-test3.show();
+console.log('null', zone.getWeathers());
 
-const test4 = new EorzeaTime(Date.now());
-console.log('test4');
-test4.show();
+console.log(-3, zone.getWeathers(-3));
+
+console.log(3, zone.getWeathers(3));
