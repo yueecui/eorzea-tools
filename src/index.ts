@@ -6,12 +6,33 @@ if (typeof (window) != 'undefined') {
     window.EorzeaWeather = EorzeaWeather;
 }
 
+// const time = new EorzeaTime().getIntervalStartEorzeaTime();
+// console.log(time.timestamp/(175 * 1000)/8);
+
+// const timeA = new EorzeaTime();
+// const timeB = new EorzeaTime().getIntervalStartEorzeaTime(-1);
+
+
 const zone = new EorzeaWeather('拉诺西亚外地');
 
-console.log('-3~10', zone.getWeathers([3, 10]));
+const result = zone.findWeather({
+    target: '碧空',
+    previous: '晴朗',
+});
 
-console.log('null', zone.getWeathers());
+console.log(result);
 
-console.log(-3, zone.getWeathers(-3));
+const result2= zone.findWeather({
+    target: '碧空',
+    previous: '晴朗',
+}, result.nextStarttime)
 
-console.log(3, zone.getWeathers(3));
+console.log(result2);
+
+// console.log('-3~10', zone.getWeathers([3, 10]));
+
+// console.log('null', zone.getWeathers());
+
+// console.log(-3, zone.getWeathers(-3));
+
+// console.log(3, zone.getWeathers(3));

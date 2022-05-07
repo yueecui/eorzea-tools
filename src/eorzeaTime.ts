@@ -13,15 +13,11 @@ const EORZEA_YEAR_EQUAL_MILESECONDS = EORZEA_MONTH_EQUAL_MILESECONDS * EORZEA_MO
 
 
 export class EorzeaTime {
+    static cache: Record<number, number> = {};
     timestamp: number = 0;
-    year: number = 0;
-    month: number = 0;
-    day: number = 0;
-    hour: number = 0;
-    minute: number = 0;
 
     constructor(timestamp?: number) {
-        this.updateTimestamp(timestamp ? timestamp : Date.now());
+        this.timestamp = timestamp ? timestamp : Date.now();
     }
 
     static fromEorzeaTime(year: number, month: number, day: number, hour: number, minute: number) {
@@ -46,48 +42,64 @@ export class EorzeaTime {
         return new EorzeaTime(timestamp);
     }
 
-    updateTimestamp(timestamp: number) {
-        this.timestamp = timestamp;
-        this.year = (this.timestamp / EORZEA_YEAR_EQUAL_MILESECONDS) >>> 0;
-        this.month = ((this.timestamp / EORZEA_MONTH_EQUAL_MILESECONDS) >>> 0) % EORZEA_MONTHS_PER_YEAR + 1;
-        this.day = ((this.timestamp / EORZEA_DAY_EQUAL_MILESECONDS) >>> 0) % EORZEA_DAYS_PER_MONTH + 1;
-        this.hour = ((this.timestamp / EORZEA_HOUR_EQUAL_MILESECONDS) >>> 0) % EORZEA_HOURS_PER_DAY;
-        this.minute = ((this.timestamp / EORZEA_MINUTE_EQUAL_MILESECONDS) >>> 0) % EORZEA_MINUTES_PER_HOUR;
+    static fromEpochIntervalIndex(index: number) {
+        return new EorzeaTime(index * EORZEA_HOUR_EQUAL_MILESECONDS * 8);
+    }
+
+    getYear() {
+        return Math.floor(this.timestamp / EORZEA_YEAR_EQUAL_MILESECONDS);
+    }
+
+    getMonth() {
+        return Math.floor(this.timestamp / EORZEA_MONTH_EQUAL_MILESECONDS) % EORZEA_MONTHS_PER_YEAR + 1;
+    }
+
+    getDay() {
+        return Math.floor(this.timestamp / EORZEA_DAY_EQUAL_MILESECONDS) % EORZEA_DAYS_PER_MONTH + 1;
+    }
+
+    getHour() {
+        return Math.floor(this.timestamp / EORZEA_HOUR_EQUAL_MILESECONDS) % EORZEA_HOURS_PER_DAY;
+    }
+
+    getMinute() {
+        return Math.floor(this.timestamp / EORZEA_MINUTE_EQUAL_MILESECONDS) % EORZEA_MINUTES_PER_HOUR;
     }
 
     /** 艾欧泽亚月份的游戏名称 */
-    get monthName() {
-        return EORZEA_MONTHS_NAME_MAP[this.month];
+    getMonthName() {
+        return EORZEA_MONTHS_NAME_MAP[this.getMonth()];
     }
 
     /** 获取当前时间的天气索引 */
     getWeatherValue() {
-        const totalDays = Math.floor(this.timestamp / EORZEA_DAY_EQUAL_MILESECONDS);
-        // 00:00~07:59 is 8
-        // 08:00~15:59 is 16
-        // 16:00~23:59 is 0        
-        let value = totalDays * 100 + (this.getIntervalIndex() + 1) * 8 % 24;
-        value = ((value << 11) ^ value) >>> 0;
-        value = ((value >>> 8) ^ value) >>> 0;
+        const intervalIndex = this.getEpochIntervalIndex();
+        if (EorzeaTime.cache[intervalIndex] == undefined) {
+            const totalDays = Math.floor(this.timestamp / EORZEA_DAY_EQUAL_MILESECONDS);
+            // 00:00~07:59 is 8
+            // 08:00~15:59 is 16
+            // 16:00~23:59 is 0        
+            let value = totalDays * 100 + (this.getDayIntervalIndex() + 1) * 8 % 24;
+            value = ((value << 11) ^ value) >>> 0;
+            value = ((value >>> 8) ^ value) >>> 0;
 
-        return value % 100;
+            EorzeaTime.cache[intervalIndex] = value % 100;
+        }
+        return EorzeaTime.cache[intervalIndex];
     }
 
     /** 获取当前时间段序号（0~2） */
-    getIntervalIndex() {
-        return Math.floor(this.hour / 8);
+    getDayIntervalIndex() {
+        return Math.floor(this.getHour() / 8);
     }
 
-    /** 偏移当前对象若干个时间段 */
-    offsetInterval(offset: number) {
-        this.updateTimestamp(this.timestamp + (EORZEA_HOUR_EQUAL_MILESECONDS * 8 * offset));
+    /** 获取整体时间段序号 */
+    getEpochIntervalIndex() {
+        return Math.floor(this.timestamp / (EORZEA_HOUR_EQUAL_MILESECONDS * 8));
     }
 
     /** 获取当前时间段开始的时间，可以额外指定偏移量 */
-    getIntervalStartEorzeaTime(offset?: number){
-        const eorzeaTime = EorzeaTime.fromEorzeaTime(this.year, this.month, this.day, this.getIntervalIndex() * 8, 0);
-        eorzeaTime.offsetInterval(offset == undefined ? 0 : offset);
-        return eorzeaTime;
+    getIntervalStartEorzeaTime(offset?: number) {
+        return EorzeaTime.fromEpochIntervalIndex(this.getEpochIntervalIndex() + (offset || 0));
     }
-
 }
