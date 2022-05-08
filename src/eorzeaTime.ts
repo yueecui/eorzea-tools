@@ -1,4 +1,4 @@
-import { EORZEA_MONTHS_NAME_MAP } from './eorzeaTimeData';
+import eorzeaConfig from './data/config.json';
 
 const EORZEA_MONTHS_PER_YEAR = 12;
 const EORZEA_DAYS_PER_MONTH = 32;
@@ -10,6 +10,8 @@ const EORZEA_MINUTE_EQUAL_MILESECONDS = EORZEA_HOUR_EQUAL_MILESECONDS / EORZEA_M
 const EORZEA_DAY_EQUAL_MILESECONDS = EORZEA_HOUR_EQUAL_MILESECONDS * EORZEA_HOURS_PER_DAY;
 const EORZEA_MONTH_EQUAL_MILESECONDS = EORZEA_DAY_EQUAL_MILESECONDS * EORZEA_DAYS_PER_MONTH;
 const EORZEA_YEAR_EQUAL_MILESECONDS = EORZEA_MONTH_EQUAL_MILESECONDS * EORZEA_MONTHS_PER_YEAR;
+
+const EORZEA_MONTH_NAMES_MAP = eorzeaConfig.month_names as { [key: number]: string };
 
 
 export class EorzeaTime {
@@ -68,7 +70,7 @@ export class EorzeaTime {
 
     /** 艾欧泽亚月份的游戏名称 */
     getMonthName() {
-        return EORZEA_MONTHS_NAME_MAP[this.getMonth()];
+        return EORZEA_MONTH_NAMES_MAP[this.getMonth()];
     }
 
     /** 获取当前时间的天气索引 */

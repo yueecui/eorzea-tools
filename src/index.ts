@@ -1,3 +1,4 @@
+import { json } from "stream/consumers";
 import { EorzeaTime } from "./eorzeaTime";
 import { EorzeaWeather } from "./eorzeaWeather";
 
@@ -13,21 +14,21 @@ if (typeof (window) != 'undefined') {
 // const timeB = new EorzeaTime().getIntervalStartEorzeaTime(-1);
 
 
-const zone = new EorzeaWeather('拉诺西亚外地');
+// const zone = new EorzeaWeather('荣誉野');
 
-const result = zone.findWeather({
-    target: '碧空',
-    previous: '晴朗',
-});
+// const result = zone.findWeather({
+//     target: '晴朗',
+//     interval: [true, true, false],
+// });
 
-console.log(result);
+// console.log(result);
 
-const result2= zone.findWeather({
-    target: '碧空',
-    previous: '晴朗',
-}, result.nextStarttime)
+// const result2= zone.findWeather({
+//     target: '碧空',
+//     previous: '晴朗',
+// }, result.nextStarttime)
 
-console.log(result2);
+// console.log(result2);
 
 // console.log('-3~10', zone.getWeathers([3, 10]));
 

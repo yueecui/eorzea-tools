@@ -1,9 +1,15 @@
 import { EorzeaTime } from './eorzeaTime';
-import data from './data/weatherData.json';
+import data from './data/data.json';
+import config from './data/config.json';
 
-const WEATHER_DATA: Record<string, { n: string, i: number }> = data.weather;
+const WEATHER_DATA: Record<string, { n: string, i: number }> = data.weathers;
 const MAP_CONFIGURE: Record<string, number[]> = data.mapConfigure;
-const FIND_LIMIT = 100000; // 单方向查找的上限（正向或是逆向）
+const MAP_GROUPS: MapGroup[] = data.mapGroups;
+const SPECIAL_WEATHER_SET: Record<string, string[]> = config.special;
+const FIND_LIMIT = 100000; // 单方向查找的上限
+
+const RAINBOW_PREVIOUS_WEATHER = ['小雨', '暴雨', '雷雨'];
+const RAINBOW_WEATHER_EXCEPTION = [...RAINBOW_PREVIOUS_WEATHER, '小雪', '暴雪', '薄雾'];
 
 
 export class EorzeaWeather {
@@ -11,15 +17,17 @@ export class EorzeaWeather {
     /** 100长度的数组，对应天气索引 */
     private _weahterMap: number[];
     /** 本地图有效的天气列表 */
-    validWeathers: string[];
-
+    private _validWeathers: string[];
+    /** 本地图可以出现彩虹的天气 */
+    private _rainbowWeathers: string[];
 
     constructor(mapName: string) {
         if (!MAP_CONFIGURE[mapName]) {
             throw new Error(`地图 ${mapName} 不支持，请检查数据`);
         }
         this.mapName = mapName;
-        [this._weahterMap, this.validWeathers] = this._generateWeatherMap();
+        [this._weahterMap, this._validWeathers] = this._generateWeatherMap();
+        this._rainbowWeathers = this._getRainbowWeather();
     }
 
     private _generateWeatherMap(): [number[], string[]] {
@@ -37,8 +45,16 @@ export class EorzeaWeather {
         return [weatherMap, validWeathers];
     }
 
+    static getMapGroups() {
+        return MAP_GROUPS;
+    }
+
     getValidWeathers() {
-        return this.validWeathers;
+        return this._validWeathers;
+    }
+
+    static getValidMaps() {
+        return Object.keys(MAP_CONFIGURE);
     }
 
     getWeathers(amount?: number | [number, number], starttime?: EorzeaTime | number): WeatherResult[] {
@@ -118,9 +134,9 @@ export class EorzeaWeather {
         if (typeof (condition.target) == 'string') {
             condition.target = [condition.target];
         }
-        condition.target = condition.target.filter(t => this.validWeathers.includes(t));
+        condition.target = condition.target.filter(t => this._validWeathers.includes(t));
         // 全包含等于全不包含
-        if (condition.target.length == this.validWeathers.length) {
+        if (condition.target.length == this._validWeathers.length) {
             condition.target = [];
         }
         // 前置
@@ -129,9 +145,9 @@ export class EorzeaWeather {
         } else if (typeof (condition.previous) == 'string') {
             condition.previous = [condition.previous];
         }
-        condition.previous = condition.previous.filter(t => this.validWeathers.includes(t));
+        condition.previous = condition.previous.filter(t => this._validWeathers.includes(t));
         // 全包含等于全不包含
-        if (condition.previous.length == this.validWeathers.length) {
+        if (condition.previous.length == this._validWeathers.length) {
             condition.previous = [];
         }
         // 时段
@@ -146,7 +162,6 @@ export class EorzeaWeather {
 
     /** 查找天气的内部实现 */
     private _findWeather(condition: findWeatherCondition, timestamp: number): findWeatherResult {
-        console.log(timestamp);
         if (condition.previous == undefined) {
             condition.previous = [];
         }
@@ -164,7 +179,7 @@ export class EorzeaWeather {
         /** 是否没有前置条件 */
         const hasPrevious = condition.previous.length > 0;
         /** 是否没有目标条件 */
-        const hasTarget = condition.previous.length > 0;
+        const hasTarget = condition.target.length > 0;
         /** 上一个天气记录用 */
         let previousWeatherResult: WeatherResult = this._generateWeatherResult(baseTime.getWeatherValue(), baseTime.timestamp);
         let previousValid: boolean = condition.previous.includes(previousWeatherResult.name);
@@ -209,6 +224,206 @@ export class EorzeaWeather {
             target: null,
             previous: null,
             nextStarttime: -2
+        }
+    }
+
+    /** 获取本地图可以出现彩虹的天气 */
+    private _getRainbowWeather(): string[] {
+        const rainbowWeathers = [];
+        let hasRain = false;
+        for (const weather of this._validWeathers) {
+            if (RAINBOW_PREVIOUS_WEATHER.includes(weather)) {
+                hasRain = true;
+            } else if (!RAINBOW_WEATHER_EXCEPTION.includes(weather)) {
+                rainbowWeathers.push(weather);
+            }
+        }
+
+        if (hasRain && rainbowWeathers.length > 0) {
+            return rainbowWeathers;
+        } else {
+            return [];
+        }
+    }
+
+    // 获取本地图拥有的特殊天象列表
+    getAllSpecialWeatherTypes(): string[] {
+        const specialWeathers = [];
+        if (this._rainbowWeathers.length > 0) {
+            specialWeathers.push('彩虹');
+        }
+        for (const weather of Object.keys(SPECIAL_WEATHER_SET)) {
+            if (SPECIAL_WEATHER_SET[weather].includes(this.mapName)) {
+                specialWeathers.push(weather);
+            }
+        }
+        return specialWeathers;
+    }
+
+    // 查找特殊天象时间
+    findSpecialWeather(weatherType: string, starttime?: EorzeaTime | number): findWeatherResult {
+        if (starttime == undefined) {
+            starttime = Date.now();
+        } else if (typeof (starttime) === 'object') {
+            starttime = starttime.timestamp;
+        }
+        const specialWeathers = this.getAllSpecialWeatherTypes();
+        if (specialWeathers.includes(weatherType)) {
+            switch (weatherType) {
+                case '彩虹':
+                    return this._findRainbow(starttime);
+                case '钻石星辰':
+                    return this._findDiamondStar(starttime);
+                case '极光':
+                    return this._findAurora(starttime);
+                default:
+                    console.error(`天气类型 ${weatherType} 不存在`);
+            }
+        }else{
+            console.error(`地图 ${this.mapName} 没有特殊天象：${weatherType}`);
+        }
+
+        return {
+            target: null,
+            previous: null,
+            nextStarttime: -1,
+        }
+    }
+
+    // 判断是否为彩虹天气
+    isRainbow(findResult: findWeatherResult): boolean {
+        if (findResult.target == null || findResult.previous == null || findResult.nextStarttime < 0) {
+            return false;
+        }
+        if (this._rainbowWeathers.length == 0) {
+            return false;
+        }
+        if (!RAINBOW_PREVIOUS_WEATHER.includes(findResult.previous.name)) {
+            return false;
+        }
+        if (!this._rainbowWeathers.includes(findResult.target.name)) {
+            return false;
+        }
+        const targetTime = new EorzeaTime(findResult.target.start);
+        const day = targetTime.getDay();
+        const interval = targetTime.getDayIntervalIndex();
+        if ((day > 27 || day < 6) && interval > 0) {
+            return true;
+        } else if (day == 27 && interval == 2) {
+            return true;
+        } else if (day == 6 && interval == 1) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // 查找彩虹时间
+    private _findRainbow(starttime: number): findWeatherResult {
+        while (true) {
+            const next = this._findWeather({
+                target: this._rainbowWeathers,
+                previous: RAINBOW_PREVIOUS_WEATHER,
+                interval: [false, true, true],
+            }, starttime)
+
+            if (next.target == null) {
+                console.error(`预料外的错误：找不到彩虹天气，地图：${this.mapName}`);
+                return {
+                    target: null,
+                    previous: null,
+                    nextStarttime: -3,
+                };
+            }
+
+            if (this.isRainbow(next)) {
+                return next;
+            } else {
+                starttime = next.nextStarttime;
+            }
+        }
+    }
+
+    // 判断是否为钻石星辰
+    isDiamondStar(findResult: findWeatherResult): boolean {
+        if (findResult.target == null || findResult.previous == null || findResult.nextStarttime < 0) {
+            return false;
+        }
+        if (!SPECIAL_WEATHER_SET['钻石星辰'].includes(this.mapName)) {
+            return false;
+        }
+        const targetTime = new EorzeaTime(findResult.target.start);
+        if (findResult.target.name == '晴朗' && targetTime.getDayIntervalIndex() == 0) {
+            return true;
+        }
+        if (findResult.target.name == '晴朗' && targetTime.getDayIntervalIndex() == 1 && findResult.previous.name != '晴朗') {
+            return true;
+        }
+        return false;
+    }
+
+    // 查找钻石星辰时间
+    private _findDiamondStar(starttime: number): findWeatherResult {
+        while (true) {
+            const next = this._findWeather({
+                target: '晴朗',
+                interval: [true, true, false],
+            }, starttime)
+
+            if (next.target == null) {
+                console.error(`预料外的错误：找不到钻石星辰天气，地图：${this.mapName}`);
+                return {
+                    target: null,
+                    previous: null,
+                    nextStarttime: -4,
+                };
+            }
+
+            if (this.isDiamondStar(next)) {
+                return next;
+            } else {
+                starttime = next.nextStarttime;
+            }
+        }
+    }
+
+    // 判断是否为极光
+    isAurora(findResult: findWeatherResult): boolean {
+        if (findResult.target == null || findResult.previous == null || findResult.nextStarttime < 0) {
+            return false;
+        }
+        if (!SPECIAL_WEATHER_SET['极光'].includes(this.mapName)) {
+            return false;
+        }
+        const targetTime = new EorzeaTime(findResult.target.start);
+        if (findResult.target.name == '碧空' && targetTime.getDayIntervalIndex() == 0) {
+            return true;
+        }
+        return false;
+    }
+
+    // 查找极光时间
+    private _findAurora(starttime: number): findWeatherResult {
+        while (true) {
+            const next = this._findWeather({
+                target: '碧空',
+                interval: [true, false, false],
+            }, starttime)
+
+            if (next.target == null) {
+                console.error(`预料外的错误：找不到极光天气，地图：${this.mapName}`);
+                return {
+                    target: null,
+                    previous: null,
+                    nextStarttime: -5,
+                };
+            }
+
+            if (this.isAurora(next)) {
+                return next;
+            } else {
+                starttime = next.nextStarttime;
+            }
         }
     }
 }

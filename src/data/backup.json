@@ -1,0 +1,100 @@
+{
+    "guardian_details": {
+        "1": {
+            "name": "哈罗妮",
+            "gender": "女",
+            "element": "星极冰",
+            "shrine": "",
+            "power": "冰河与战争",
+            "month": "星一月"
+        },
+        "2": {
+            "name": "梅茵菲娜",
+            "gender": "女",
+            "element": "灵极冰",
+            "shrine": "",
+            "power": "双月与慈爱",
+            "month": "灵一月"
+        },
+        "3": {
+            "name": "沙利亚克",
+            "gender": "男",
+            "element": "星极水",
+            "shrine": "",
+            "power": "河流与知识",
+            "month": "星二月"
+        },
+        "4": {
+            "name": "妮美雅",
+            "gender": "女",
+            "element": "灵极水",
+            "shrine": "",
+            "power": "行星与命运",
+            "month": "灵二月"
+        },
+        "5": {
+            "name": "利姆莱茵",
+            "gender": "女",
+            "element": "星极风",
+            "shrine": "",
+            "power": "海洋与航海",
+            "month": "星三月"
+        },
+        "6": {
+            "name": "奥修昂",
+            "gender": "男",
+            "element": "灵极风",
+            "shrine": "",
+            "power": "山岳与放浪",
+            "month": "灵三月"
+        },
+        "7": {
+            "name": "比尔格",
+            "gender": "男",
+            "element": "星极雷",
+            "shrine": "技巧宫",
+            "power": "建筑与工艺",
+            "month": "星四月"
+        },
+        "8": {
+            "name": "拉尔戈",
+            "gender": "男",
+            "element": "灵极雷",
+            "shrine": "彗星宫",
+            "power": "彗星与破坏",
+            "month": "灵四月"
+        },
+        "9": {
+            "name": "阿泽玛",
+            "gender": "女",
+            "element": "星极火",
+            "shrine": "审理宫",
+            "power": "太阳与审理",
+            "month": "星五月"
+        },
+        "10": {
+            "name": "纳尔札尔",
+            "gender": "男",
+            "element": "灵极火",
+            "shrine": "二面宫",
+            "power": "地底与商贸",
+            "month": "灵五月"
+        },
+        "11": {
+            "name": "诺菲卡",
+            "gender": "女",
+            "element": "星极土",
+            "shrine": "",
+            "power": "大地与丰饶",
+            "month": "星六月"
+        },
+        "12": {
+            "name": "阿尔基克",
+            "gender": "男",
+            "element": "灵极土",
+            "shrine": "",
+            "power": "重力与光阴",
+            "month": "灵六月"
+        }
+    }
+}
