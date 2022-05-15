@@ -23,17 +23,20 @@ export class EorzeaTime {
     }
 
     static fromEorzeaTime(year: number, month: number, day: number, hour: number, minute: number) {
+        if (year < 0){
+            throw new Error('year 必须是正数。');
+        }
         if (month < 1 || month > EORZEA_MONTHS_PER_YEAR) {
-            throw new Error(`month must be between 1 and ${EORZEA_MONTHS_PER_YEAR}`);
+            throw new Error(`month 必须在 1 到 ${EORZEA_MONTHS_PER_YEAR} 之间。`);
         }
         if (day < 1 || day > EORZEA_DAYS_PER_MONTH) {
-            throw new Error(`day must be between 1 and ${EORZEA_DAYS_PER_MONTH}`);
+            throw new Error(`day 必须在 1 到 ${EORZEA_DAYS_PER_MONTH} 之间。`);
         }
         if (hour < 0 || hour >= EORZEA_HOURS_PER_DAY) {
-            throw new Error(`hour must be between 0 and ${EORZEA_HOURS_PER_DAY}`);
+            throw new Error(`hour 必须在 0 到 ${EORZEA_HOURS_PER_DAY - 1} 之间。`);
         }
         if (minute < 0 || minute >= EORZEA_MINUTES_PER_HOUR) {
-            throw new Error(`minute must be between 0 and ${EORZEA_MINUTES_PER_HOUR}`);
+            throw new Error(`minute 必须在 0 到 ${EORZEA_MINUTES_PER_HOUR - 1} 之间。`);
         }
 
         const timestamp = EORZEA_YEAR_EQUAL_MILESECONDS * year

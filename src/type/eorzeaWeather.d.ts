@@ -7,7 +7,7 @@ declare class EorzeaWeather {
     static getValidMaps(): string[];
     /** 本地图有效的天气 */
     getValidWeathers(): string[];
-    /** 获取指定时间时的天气情况 */
+    /** 获取指定时间附近的天气情况 */
     getWeathers(amount?: number | [number, number], starttime?: EorzeaTime | number): WeatherResult[];
     /** 查找一个天气 */
     findWeather(condition: findWeatherCondition, starttime?: EorzeaTime | number): findWeatherResult;
@@ -24,36 +24,53 @@ declare class EorzeaWeather {
     isAurora(findResult: findWeatherResult): boolean;
 }
 
-/** 查找天气时的单个区间结果 */
+/** 查找天气时的单个结果 */
 interface WeatherResult {
-    /** 本次请求中的序号，0为当前天气，负数为之前的，正数为之后 */
+    /** 本次请求中的序号，0为当前天气，负数为之前的，正数为之后，只用于findWeather() */
     index?: number;
+    /** 天气ID */
     wid: number;
+    /** 天气名称 */
     name: string;
+    /** 天气图标 */
     icon: number;
+    /** 天气开始的时间戳 */
     start: number;
 }
 
+/** 查询天气条件 */
 interface findWeatherCondition {
-    target: string | string[];
+    /** 目标天气 */
+    target?: string | string[];
+    /** 前置天气 */
     previous?: string | string[];
+    /** 有效时间区间 */
     interval?: [boolean, boolean, boolean];
 }
 
+/** 天气查找结果 */
 interface findWeatherResult {
+    /** 目标天气信息 */
     target: WeatherResult | null;
+    /** 前置天气信息 */
     previous: WeatherResult | null;
+    /** 下一次查找使用的开始时间戳 */
     nextStarttime: number;
 }
 
 /** 地图组 */
 interface MapGroup {
+    /** 组名称 */
     name: string;
+    /** 组图标ID，该ID为Wiki中[[File:Weather_area_X.png]]的X */
     icon: number;
+    /** 区域信息组，一个地图组可以有多个区域 */
     zones: ZoneInfo[];
 }
 
 interface ZoneInfo {
+    /** 区域名称 */
     name: string;
+    /** 地图名称 */
     maps: string[];
 }

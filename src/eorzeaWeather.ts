@@ -131,7 +131,9 @@ export class EorzeaWeather {
         }
         // 检查各个条件是否合法
         // 目标
-        if (typeof (condition.target) == 'string') {
+        if (condition.target == undefined) {
+            condition.target = [];
+        } else if (typeof (condition.target) == 'string') {
             condition.target = [condition.target];
         }
         condition.target = condition.target.filter(t => this._validWeathers.includes(t));
@@ -162,11 +164,14 @@ export class EorzeaWeather {
 
     /** 查找天气的内部实现 */
     private _findWeather(condition: findWeatherCondition, timestamp: number): findWeatherResult {
+        if (condition.target == undefined) {
+            condition.target == [];
+        }
         if (condition.previous == undefined) {
             condition.previous = [];
         }
         // 如果没有目标，也没有前置，则返回空
-        if (condition.target.length == 0 && condition.previous.length == 0) {
+        if (condition.target!.length == 0 && condition.previous.length == 0) {
             return {
                 target: null,
                 previous: null,
@@ -179,7 +184,7 @@ export class EorzeaWeather {
         /** 是否没有前置条件 */
         const hasPrevious = condition.previous.length > 0;
         /** 是否没有目标条件 */
-        const hasTarget = condition.target.length > 0;
+        const hasTarget = condition.target!.length > 0;
         /** 上一个天气记录用 */
         let previousWeatherResult: WeatherResult = this._generateWeatherResult(baseTime.getWeatherValue(), baseTime.timestamp);
         let previousValid: boolean = condition.previous.includes(previousWeatherResult.name);
@@ -196,11 +201,11 @@ export class EorzeaWeather {
             if (!condition.interval![currentTime.getDayIntervalIndex()]) continue;
             let found = false;
             if (hasPrevious && hasTarget) {
-                found = previousValid && condition.target.includes(currentWeatherResult.name);
+                found = previousValid && condition.target!.includes(currentWeatherResult.name);
             } else if (hasPrevious) {
                 found = previousValid;
             } else if (hasTarget) {
-                found = condition.target.includes(currentWeatherResult.name);
+                found = condition.target!.includes(currentWeatherResult.name);
             } else {
                 // 不应该出现的情况
                 break;
@@ -279,7 +284,7 @@ export class EorzeaWeather {
                 default:
                     console.error(`天气类型 ${weatherType} 不存在`);
             }
-        }else{
+        } else {
             console.error(`地图 ${this.mapName} 没有特殊天象：${weatherType}`);
         }
 

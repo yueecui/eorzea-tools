@@ -1,4 +1,3 @@
-import { json } from "stream/consumers";
 import { EorzeaTime } from "./eorzeaTime";
 import { EorzeaWeather } from "./eorzeaWeather";
 
