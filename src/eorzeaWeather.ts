@@ -57,6 +57,15 @@ export class EorzeaWeather {
         return Object.keys(MAP_CONFIGURE);
     }
 
+    static getWeatherIconId(weatherName: string){
+        for (const weather of Object.values(WEATHER_DATA)) {
+            if (weather.n === weatherName) {
+                return weather.i;
+            }
+        }
+        return -1;
+    }
+
     getWeathers(amount?: number | [number, number], starttime?: EorzeaTime | number): WeatherResult[] {
         if (starttime == undefined) {
             starttime = Date.now();
@@ -129,6 +138,7 @@ export class EorzeaWeather {
         } else if (typeof (starttime) === 'object') {
             starttime = starttime.timestamp;
         }
+        condition = JSON.parse(JSON.stringify(condition));
         // 检查各个条件是否合法
         // 目标
         if (condition.target == undefined) {

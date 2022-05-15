@@ -5,6 +5,8 @@ declare class EorzeaWeather {
     static getMapGroups(): MapGroup[];
     /** 获得所有有效的地图名字 */
     static getValidMaps(): string[];
+    /** 根据天气名称获得天气图标ID */
+    static getWeatherIconId(weatherName: string): number;
     /** 本地图有效的天气 */
     getValidWeathers(): string[];
     /** 获取指定时间附近的天气情况 */
