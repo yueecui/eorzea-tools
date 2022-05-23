@@ -14,10 +14,15 @@ declare class EorzeaWeather {
     /** 查找一个天气 */
     findWeather(condition: findWeatherCondition, starttime?: EorzeaTime | number): findWeatherResult;
 
+    /** 获取支持的所有特殊天象名称 */
+    static getValidSpecialWeathers(): string[];
     /** 获取本地图拥有的特殊天象列表 */
     getAllSpecialWeatherTypes(): string[];
     /** 查找指定特殊天象 */
     findSpecialWeather(weatherType: string, starttime?: EorzeaTime | number): findWeatherResult;
+    /** 判断某个时间点是否为某个特殊天气 */
+    isSpecialWeather(weatherType: string, timestamp?: EorzeaTime | number): boolean
+    isSpecialWeather(weatherType: string, findResult: findWeatherResult): boolean
     /** 判断一个搜索天气结果是否为彩虹 */
     isRainbow(findResult: findWeatherResult): boolean;
     /** 判断一个搜索天气结果是否为钻石星辰 */

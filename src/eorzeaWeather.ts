@@ -57,7 +57,7 @@ export class EorzeaWeather {
         return Object.keys(MAP_CONFIGURE);
     }
 
-    static getWeatherIconId(weatherName: string){
+    static getWeatherIconId(weatherName: string) {
         for (const weather of Object.values(WEATHER_DATA)) {
             if (weather.n === weatherName) {
                 return weather.i;
@@ -69,7 +69,7 @@ export class EorzeaWeather {
     getWeathers(amount?: number | [number, number], starttime?: EorzeaTime | number): WeatherResult[] {
         if (starttime == undefined) {
             starttime = Date.now();
-        } else if (typeof (starttime) === 'object') {
+        } else if (starttime instanceof EorzeaTime) {
             starttime = starttime.timestamp;
         }
 
@@ -135,7 +135,7 @@ export class EorzeaWeather {
     findWeather(condition: findWeatherCondition, starttime?: EorzeaTime | number): findWeatherResult {
         if (starttime == undefined) {
             starttime = Date.now();
-        } else if (typeof (starttime) === 'object') {
+        } else if (starttime instanceof EorzeaTime) {
             starttime = starttime.timestamp;
         }
         condition = JSON.parse(JSON.stringify(condition));
@@ -262,6 +262,11 @@ export class EorzeaWeather {
     }
 
     // 获取本地图拥有的特殊天象列表
+    static getValidSpecialWeathers(): string[] {
+        return ['彩虹', ...Object.keys(SPECIAL_WEATHER_SET)];
+    }    
+
+    // 获取本地图拥有的特殊天象列表
     getAllSpecialWeatherTypes(): string[] {
         const specialWeathers = [];
         if (this._rainbowWeathers.length > 0) {
@@ -279,7 +284,7 @@ export class EorzeaWeather {
     findSpecialWeather(weatherType: string, starttime?: EorzeaTime | number): findWeatherResult {
         if (starttime == undefined) {
             starttime = Date.now();
-        } else if (typeof (starttime) === 'object') {
+        } else if (starttime instanceof EorzeaTime) {
             starttime = starttime.timestamp;
         }
         const specialWeathers = this.getAllSpecialWeatherTypes();
@@ -302,6 +307,37 @@ export class EorzeaWeather {
             target: null,
             previous: null,
             nextStarttime: -1,
+        }
+    }
+
+    // 判断是否为某个特殊天气
+    isSpecialWeather(weatherType: string, timestamp?: EorzeaTime | number | findWeatherResult): boolean {
+        if (timestamp == undefined) {
+            timestamp = Date.now();
+        } else if (timestamp instanceof EorzeaTime) {
+            timestamp = timestamp.timestamp;
+        }
+        let findResult: findWeatherResult;
+        if (typeof (timestamp) == 'number') {
+            const weather = this.getWeathers(-1, timestamp);
+            findResult = {
+                target: weather[1],
+                previous: weather[0],
+                nextStarttime: weather[1].start,
+            }
+        } else {
+            findResult = timestamp;
+        }
+        switch (weatherType) {
+            case '彩虹':
+                return this.isRainbow(findResult);
+            case '钻石星辰':
+                return this.isDiamondStar(findResult);
+            case '极光':
+                return this.isAurora(findResult);
+            default:
+                console.error(`天气类型 ${weatherType} 不存在`);
+                return false;
         }
     }
 
